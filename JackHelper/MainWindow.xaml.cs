@@ -32,20 +32,52 @@ namespace JackHelper
     public partial class MainWindow : Window
     {
         string SCRIPT_PATH = @"\\tanas\share\jack\add_task_test.ps1";
-        
+        public ComputerSelect ComputerWindow;
         public MainWindow()
         {
             InitializeComponent();
             outputBox.Clear();
             outputBox.IsReadOnly = true;
+
+            taskHistoryBox.MouseDoubleClick += TaskHistoryBox_MouseDoubleClick;
+            System.AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
+        }
+
+        private void TaskHistoryBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (taskHistoryBox.SelectedItem != null)
+            {
+                Task task = (Task)taskHistoryBox.SelectedItem;
+                if (!Dispatcher.CheckAccess())
+                {
+                    Action action = delegate ()
+                    {
+                        task.FillFields(this);
+                    };
+                    Dispatcher.Invoke(DispatcherPriority.Normal, action);
+                }
+                else
+                {
+                    task.FillFields(this);
+                }
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            ComputerWindow = new ComputerSelect { Owner = this };
+            ComputerWindow.Show();
         }
 
         public void AppendOutputText(string text)
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(
-                        () => outputBox.AppendText(text), DispatcherPriority.Normal);
+                Action action = delegate ()
+                {
+                    outputBox.AppendText(text);
+                };
+                Dispatcher.Invoke(DispatcherPriority.Normal,action);
             }
             else
             {
@@ -55,9 +87,22 @@ namespace JackHelper
 
         void myInformationEventHandler(object sender, DataAddedEventArgs e)
         {
-            InformationRecord newRecord = ((PSDataCollection<InformationRecord>)sender)[e.Index];
-            Console.WriteLine(newRecord.ToString());
+            VerboseRecord newRecord = ((PSDataCollection<VerboseRecord>)sender)[e.Index];
             AppendOutputText(newRecord.ToString() + "\n");
+            Console.WriteLine(newRecord.ToString());
+        }
+
+        void myProgressEventHandler(object sender, DataAddedEventArgs e)
+        {
+            ProgressRecord newRecord = ((PSDataCollection<ProgressRecord>)sender)[e.Index];
+            AppendOutputText(newRecord.Activity.ToString() + "\n");
+            Console.WriteLine(newRecord.Activity.ToString());
+        }
+
+        void myDebugEventHandler(object sender, DataAddedEventArgs e)
+        {
+            DebugRecord newRecord = ((PSDataCollection<DebugRecord>)sender)[e.Index];
+            AppendOutputText("Debug: " + newRecord.ToString() + "\n");
             Console.WriteLine(newRecord.ToString());
         }
 
@@ -76,8 +121,35 @@ namespace JackHelper
             string taskName = tasksBox.Text;
             switch (taskName)
             {
+                case "Benchmark":
+                    try
+                    {
+                        task = new BenchmarkTask(labelBox.Text, productBox.Text, parametersBox.Text, int.Parse(loopsBox.Text), ComputerWindow.SelectedComputers(), parseOSList);
+                    }
+                    catch (FormatException)
+                    {
+                        MessageBox.Show("ERROR", "Loops is not a number!");
+                        return;
+                    }
+                    
+                    break;
+                case "Boot":
+                    task = new BootTask(ComputerWindow.SelectedComputers(), parseOSList);
+                    break;
+                case "Reboot":
+                    task = new RebootTask(ComputerWindow.SelectedComputers(), parseOSList);
+                    break;
+                case "Shutdown":
+                    task = new ShutdownTask(ComputerWindow.SelectedComputers(), parseOSList);
+                    break;
                 case "Exec":
-                    task = new ExecTask(commandTextBox.Text ,"TEST-A01"/*computersTextBox.Text*/, parseOSList);
+                    task = new ExecTask(commandTextBox.Text, ComputerWindow.SelectedComputers(), parseOSList);
+                    break;
+                case "Winupdate":
+                    task = new WinUpdateTask(ComputerWindow.SelectedComputers(), parseOSList);
+                    break;
+                case "Update":
+                    task = new UpdateTask(ComputerWindow.SelectedComputers(), parseOSList);
                     break;
                 default:
                     return;
@@ -87,66 +159,28 @@ namespace JackHelper
 
 
             PowerShell psinstance = PowerShell.Create();
-            psinstance.Streams.Information.DataAdded += myInformationEventHandler;
+            psinstance.Streams.Verbose.DataAdded += myInformationEventHandler;
+            psinstance.Streams.Progress.DataAdded += myProgressEventHandler;
+            psinstance.Streams.Debug.DataAdded += myDebugEventHandler;
             psinstance.Streams.Error.DataAdded += myErrorEventHandler;
+
+            //scriptInvoker.Invoke("Set-ExecutionPolicy Unrestricted Process");
+            psinstance.AddCommand("Set-ExecutionPolicy");
+            psinstance.AddParameter("-ExecutionPolicy", "Bypass");
             psinstance.AddCommand(SCRIPT_PATH);
-            foreach (var item in parameters)
+            foreach (var param in parameters)
             {
-                psinstance.AddParameter(item.Item1, item.Item2);
+                psinstance.AddParameter(param.Item1, param.Item2);
             }
             var results = psinstance.BeginInvoke();
-
-
-
-            //Console.WriteLine(SCRIPT_PATH + " " + parameters);
-            //Process.Start("powershell", jackPath + " " + task.GetJackParameters());
-
-            //powerShell.AddCommand("Set-ExecutionPolicy").AddArgument("Unrestricted").AddArgument("Process");
-            //powerShell.AddScript(jackPath + " " + task.GetJackParameters());
-
-            // create Powershell runspace 
-            /*Runspace runspace = RunspaceFactory.CreateRunspace();
-
-            // open it 
-            runspace.Open();
-
-            RunspaceInvoke runSpaceInvoker = new RunspaceInvoke(runspace);
-            runSpaceInvoker.Invoke("Set-ExecutionPolicy Unrestricted");
-
-            // create a pipeline and feed it the script text 
-            Pipeline pipeline = runspace.CreatePipeline();
-
-
-            Command command = new Command(SCRIPT_PATH);
-
-            foreach (var item in parameters)
+            /*foreach (PSObject result in results)
             {
-                command.Parameters.Add(item.Item1, item.Item2);
-            }
-            pipeline.Commands.Add(command);
-            ///pipeline.Commands.AddScript(jackPath + " " + task.GetJackParameters());
-
-            // add an extra command to transform the script output objects into nicely formatted strings 
-            // remove this line to get the actual objects that the script returns. For example, the script 
-            // "Get-Process" returns a collection of System.Diagnostics.Process instances. 
-            pipeline.Commands.Add("Out-String");
-
-            // execute the script 
-            Collection<PSObject> results = pipeline.Invoke();
-
-            // close the runspace 
-            runspace.Close();
-
-            // convert the script result into a single string 
-            StringBuilder stringBuilder = new StringBuilder();
-            foreach (PSObject obj in results)
-            {
-                stringBuilder.AppendLine(obj.ToString());
-            }
-
-            // return the results of the script that has 
-            // now been converted to text 
-            Console.WriteLine(stringBuilder.ToString());*/
+                AppendOutputText(result.ToString());
+                Console.WriteLine(result.ToString());
+            }*/
+            ListBoxItem item = new ListBoxItem();
+            item.Content = task.ToString();
+            taskHistoryBox.Items.Add(task);
         }
 
         private List<string> parseOSList
@@ -160,6 +194,9 @@ namespace JackHelper
                     {
                         switch ((string)item.Content)
                         {
+                            case "Current":
+                                collector.Add("current");
+                                break;
                             case "Windows 10":
                                 collector.Add("10");
                                 break;
@@ -168,6 +205,9 @@ namespace JackHelper
                                 break;
                             case "Windows 8":
                                 collector.Add("8");
+                                break;
+                            case "Windows 7":
+                                collector.Add("7");
                                 break;
                             default:
                                 break;
@@ -205,8 +245,22 @@ namespace JackHelper
 
         private void computtersButton_Click(object sender, RoutedEventArgs e)
         {
-            ComputerSelect window = new ComputerSelect();
-            window.Show();
+            ComputerWindow.Show();
+        }
+
+        private void tasksBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void loopsBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(e.ExceptionObject.ToString(), "Unhandled exception");
         }
     }
 }

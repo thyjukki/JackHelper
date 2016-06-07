@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace JackHelper
 {
@@ -20,12 +22,98 @@ namespace JackHelper
     /// </summary>
     public partial class ComputerSelect : Window
     {
+        public ObservableCollection<Group> Groupss { get; set; }
         public List<Group> Groups = new List<Group>();
-        public List<Computer> Computers = new List<Computer>();
+        Dictionary<Computer, TreeViewModel> entries;
+        public void ClearSelections()
+        {
+            tv.IsChecked = false;
+        }
+
+        public void SelectComputers(List<Computer> computers)
+        {
+            foreach (var computer in computers)
+            {
+                if (entries.ContainsKey(computer))
+                {
+                    TreeViewModel tvItem = entries[computer];
+
+                    tvItem.IsChecked = true;
+                }
+            }
+        }
+
+        TreeViewModel tv;
         public ComputerSelect()
         {
             InitializeComponent();
+        }
+
+        TreeViewModel TreeViewModelCollector(TreeViewModel treeView,
+            Dictionary<Computer, TreeViewModel> entries, Computer entry)
+        {
+            if (!entries.ContainsKey(entry))
+            {
+                TreeViewModel item = new TreeViewModel(entry.name);
+                entries.Add(entry, item);
+                treeView.Children.Add(item);
+                item.AttachedComp = entry;
+
+
+                if (entry.GetType() == typeof(Group))
+                {
+                    Group group = (Group)entry;
+                    foreach (var computer in group.Computers)
+                    {
+                        TreeViewModel child = TreeViewModelCollector(item, entries, computer);
+
+                        if (!item.Children.Contains(child))
+                            item.Children.Add(child);
+                    }
+                }
+                else
+                {
+                    Computer computer = (Computer)entry;
+                    return item;
+                }
+            }
+
+            return entries[entry];
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             loadComputers();
+        }
+
+        void CollapseTreeviewItems(TreeViewModel Item)
+        {
+            Item.IsExpanded = false;
+
+            foreach (TreeViewModel item in Item.Children)
+            {
+                item.IsExpanded = false;
+
+                CollapseTreeviewItems(item);
+            }
+        }
+
+        void buildTreeview()
+        {
+            entries = new Dictionary<Computer, TreeViewModel>();
+
+
+            tv = new TreeViewModel("Computers");
+            foreach (var group in Groups)
+            {
+                TreeViewModelCollector(tv, entries, group);
+            }
+            tv.Initialize();
+
+            treeView1.ItemsSource = new List<TreeViewModel> { tv };
+            foreach (TreeViewModel item in treeView1.Items)
+                CollapseTreeviewItems(item);
+            
         }
 
         void loadComputers()
@@ -37,7 +125,7 @@ namespace JackHelper
             string line;
 
             // Read the file and display it line by line.
-            System.IO.StreamReader file = new System.IO.StreamReader(@"\\tanas\share\jack\testhardware.txt");
+            System.IO.StreamReader file = new System.IO.StreamReader(@"\\tanas.ldm.name\share\jack\testhardware.txt");
             while ((line = file.ReadLine()) != null)
             {
                 Char commentor = ';';
@@ -79,11 +167,11 @@ namespace JackHelper
 
                         if (computer != null)
                         {
-                            group.computers.Add(computer);
+                            group.Computers.Add(computer);
                         }
                     }
 
-                    group.computers.Sort();
+                    group.Computers.Sort();
                     groups.Add(group);
                     computers.Add(group);
 
@@ -93,62 +181,67 @@ namespace JackHelper
             }
 
             file.Close();
-        }
-    }
 
-    public class Computer : DependencyObject, IComparable
-    {
-        public string name;
+            //TODO(Jukki) FIX ME
+            Groups = groups;
 
-        public Computer()
-        {
+            List<Group> parents = new List<Group>(groups);
+            CheckSubGroups(ref parents);
 
-        }
+            Groups = parents;
 
-        public Computer (string n)
-        {
-            name = n;
-        }
-        public override string ToString()
-        {
-            return name;
+            buildTreeview();
         }
 
-        public int CompareTo(object obj)
+        private void CheckSubGroups(ref List<Group> groups)
         {
-            if (obj == null) return 1;
-
-            Computer otherName = obj as Computer;
-            if (otherName != null)
-                return this.name.CompareTo(otherName.name);
-            else
-                throw new ArgumentException("Object is not a Computer");
-        }
-    }
-    public class Group : Computer
-    {
-        public List<Computer> computers;
-
-        public Group(string n) : base("#" + n)
-        {
-            computers = new List<Computer>();
-        }
-
-        public Group(string n, List<Computer> comps) : this(n)
-        {
-            computers = comps;
-        }
-
-        public override string ToString()
-        {
-            string comps = string.Empty;
-
-            foreach (var computer in computers)
+            foreach (var item in Groups)
             {
-                comps = comps + computer.name + " ";
+                foreach (var entry in item.Computers)
+                {
+                    if (Groups.Contains(entry))
+                    {
+                        Console.WriteLine(entry.name);
+                        groups.Remove((Group)entry);
+                    }
+                }
             }
-            comps = comps.Trim();
-            return string.Format("Group {0}: {1}", name, comps);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+            //Do some stuff here 
+
+            //Hide Window
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, (DispatcherOperationCallback)delegate (object o)
+            {
+                Hide();
+                return null;
+            }, null);
+
+            //Do not close application
+            e.Cancel = true;
+
+        }
+
+        private void refreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            List<Computer> computers = tv.GetTree();
+            
+
+            string comps = string.Empty;
+            foreach (var item in computers)
+            {
+                comps = comps + item.name + " ";
+            }
+
+            Console.WriteLine(comps.Trim());
+        }
+
+        public List<Computer> SelectedComputers()
+        {
+            return tv.GetTree();
         }
     }
 }

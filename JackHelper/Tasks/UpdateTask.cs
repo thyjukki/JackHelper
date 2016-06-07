@@ -6,32 +6,32 @@ using System.Threading.Tasks;
 
 namespace JackHelper
 {
-    public class ExecTask : Task
+    public class UpdateTask : Task
     {
-        public string Command;
-
         public override string GetShortDesc
         {
             get
             {
-                return "Exec";
+                return "Update";
             }
         }
 
-        public ExecTask (string command, string computers, List<string> os) : base(computers, os)
+        public UpdateTask(List<Computer> computers, List<string> os) : base(computers, os)
         {
-            Command = command;
         }
 
         public override List<Tuple<string, object>> GetJackParameters()
         {
             List<Tuple<string, object>> collector = new List<Tuple<string, object>>();
-            collector.Add(new Tuple<string, object>("-Task", "exec"));
-            collector.Add(new Tuple<string, object>("-Command", Command));
+            collector.Add(new Tuple<string, object>("-Task", "update"));
             collector.Add(new Tuple<string, object>("-OSes", OS));
-            collector.Add(new Tuple<string, object>("-Computers", Computers));
-
+            collector.Add(new Tuple<string, object>("-Computers", ParseComputers()));
             return collector;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Jack Update {0}", string.Join(" ", ParseComputers().ToArray());
         }
     }
 }
