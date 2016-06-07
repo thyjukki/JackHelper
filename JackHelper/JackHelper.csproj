@@ -103,6 +103,8 @@
     <Compile Include="ComputerSelect.xaml.cs">
       <DependentUpon>ComputerSelect.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Scripts\REXScript.cs" />
+    <Compile Include="Scripts\Script.cs" />
     <Compile Include="Tasks\BenchmarkTask.cs" />
     <Compile Include="Tasks\BootTask.cs" />
     <Compile Include="Tasks\ExecTask.cs" />
@@ -111,6 +113,7 @@
     <Compile Include="Tasks\Task.cs" />
     <Compile Include="Tasks\UpdateTask.cs" />
     <Compile Include="Tasks\WinUpdateTask.cs" />
+    <Compile Include="TextBoxAppendBehaviours.cs" />
     <Compile Include="TreeViewModel.cs" />
     <Page Include="ComputerSelect.xaml">
       <SubType>Designer</SubType>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackHelper
+namespace JackHelper.Tasks
 {
     public class WinUpdateTask : Task
     {
@@ -31,7 +31,7 @@ namespace JackHelper
 
         public override string ToString()
         {
-            return string.Format("Windows Update {0}", string.Join(" ", ParseComputers().ToArray());
+            return string.Format("Windows Update {0}", string.Join(" ", ParseComputers().ToArray()));
         }
     }
 }

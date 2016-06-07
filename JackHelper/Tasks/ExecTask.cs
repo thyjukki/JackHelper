@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace JackHelper
+namespace JackHelper.Tasks
 {
     public class ExecTask : Task
     {

@@ -47,6 +47,7 @@ namespace JackHelper
         public ComputerSelect()
         {
             InitializeComponent();
+            loadComputers();
         }
 
         TreeViewModel TreeViewModelCollector(TreeViewModel treeView,
@@ -83,7 +84,6 @@ namespace JackHelper
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            loadComputers();
         }
 
         void CollapseTreeviewItems(TreeViewModel Item)
@@ -201,7 +201,7 @@ namespace JackHelper
                 {
                     if (Groups.Contains(entry))
                     {
-                        Console.WriteLine(entry.name);
+                        //Console.WriteLine(entry.name);
                         groups.Remove((Group)entry);
                     }
                 }

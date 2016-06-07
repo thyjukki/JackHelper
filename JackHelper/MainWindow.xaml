@@ -7,143 +7,240 @@
         Loaded="Window_Loaded"
         mc:Ignorable="d"
         Title="Jack Helper" Height="715.54" Width="619.737">
-    <Grid Margin="0,0,9,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="213*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="176*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="293*"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="127*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="383*"/>
-        </Grid.ColumnDefinitions>
-        <GroupBox x:Name="settingsGroup" Header="Settings" Margin="10" Grid.Row="0" Grid.Column="0">
-            <StackPanel>
-                <ComboBox x:Name="tasksBox" SelectedIndex="0" Margin="5" Height="22" VerticalAlignment="Top" SelectionChanged="tasksBox_SelectionChanged" IsReadOnly="True">
-                    <ComboBoxItem Content="Benchmark"/>
-                    <ComboBoxItem Content="Boot"/>
-                    <ComboBoxItem Content="Exec"/>
-                    <ComboBoxItem Content="Hosts"/>
-                    <ComboBoxItem Content="Memlimit"/>
-                    <ComboBoxItem Content="Reboot"/>
-                    <ComboBoxItem Content="Reinstall"/>
-                    <ComboBoxItem Content="Remove"/>
-                    <ComboBoxItem Content="Shutdown"/>
-                    <ComboBoxItem Content="Si-Log-Dir"/>
-                    <ComboBoxItem Content="Uninstall"/>
-                    <ComboBoxItem Content="Update"/>
-                    <ComboBoxItem Content="Watchdog"/>
-                    <ComboBoxItem Content="Winupdate"/>
-                </ComboBox>
-                <Button x:Name="computtersButton" Margin="5" Content="Select Computers" Height="20" VerticalAlignment="Top" Click="computtersButton_Click"/>
-                <ListBox x:Name="OSList" Margin="5" SelectedItem="{Binding SelectedSection}">
-                    <CheckBox Content="Current"/>
-                    <CheckBox Content="Windows 10"/>
-                    <CheckBox Content="Windows 8.1"/>
-                    <CheckBox Content="Windows 8"/>
-                    <CheckBox Content="Windows 7"/>
-                </ListBox>
-            </StackPanel>
-        </GroupBox>
-        <GroupBox x:Name="taskGroup" Header="Task Settings" Margin="10,10,0,10" Grid.Row="0" Grid.Column="2">
-            <Grid Margin="0,10,-2,-12">
-                <Button x:Name="runTaskButton" Content="Run" Margin="0,0,10,10" Click="runTaskButton_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="110"/>
-                <TextBox x:Name="commandTextBox" Margin="10,0,10,35" TextWrapping="Wrap" Text="Command">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Visibility" Value="Hidden"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="2">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
-                <ComboBox x:Name="productBox" Margin="10,10,0,0" IsReadOnly="True" SelectedIndex="0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120">
-                    <ComboBoxItem Content="3dmark06"/>
-                    <ComboBoxItem Content="3dmark11"/>
-                    <ComboBoxItem Content="3dmarkv"/>
-                    <ComboBoxItem Content="3dmarkw8"/>
-                    <ComboBoxItem Content="pcmark7"/>
-                    <ComboBoxItem Content="pcmark8"/>
-                    <ComboBoxItem Content="pcmarkeisa"/>
-                    <ComboBoxItem Content="pcmarkv"/>
-                    <ComboBoxItem Content="vrmark"/>
-                    <ComboBox.Style>
-                        <Style TargetType="ComboBox">
-                            <Setter Property="Visibility" Value="Hidden"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ComboBox.Style>
-                </ComboBox>
-                <TextBox x:Name="labelBox" Margin="148,10,10,0" TextWrapping="Wrap" Text="Label" Height="22" VerticalAlignment="Top">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Visibility" Value="Hidden"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
-                <TextBox x:Name="parametersBox" Margin="10,37,10,35" TextWrapping="Wrap" Text="Parameters">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Visibility" Value="Hidden"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
-                <TextBox x:Name="loopsBox" Margin="0,0,125,10" TextWrapping="Wrap" Text="1" TextChanged="loopsBox_TextChanged" HorizontalContentAlignment="Right" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="105">
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="Visibility" Value="Hidden"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
-            </Grid>
-        </GroupBox>
-        <GroupBox x:Name="outputGroup" Header="Output" Margin="10,10,0,10" Grid.Row="2" Grid.ColumnSpan="3">
-            <TextBox x:Name="outputBox" Grid.ColumnSpan="2" Margin="0,0,-2,-2" TextWrapping="Wrap" Text="OutputBox" Grid.Row="1"/>
-        </GroupBox>
-        <GroupBox x:Name="historyGroup" Header="History" Margin="10,14,0,10" Grid.ColumnSpan="3" Grid.Row="4">
-            <ListBox x:Name="taskHistoryBox" Margin="0,0,-2,4"/>
-        </GroupBox>
+    <TabControl x:Name="tabControl" Grid.ColumnSpan="3" Grid.RowSpan="5" Margin="0,0,2,0">
+        <TabItem Header="Jack">
+            <Grid Margin="0,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="213*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="176*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="293*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="127*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="383*"/>
+                </Grid.ColumnDefinitions>
+                <GroupBox x:Name="settingsGroup" Header="Settings" Margin="10" Grid.Row="0" Grid.Column="0">
+                    <StackPanel>
+                        <ComboBox x:Name="tasksBox" SelectedIndex="0" Margin="5" Height="22" VerticalAlignment="Top" SelectionChanged="tasksBox_SelectionChanged" IsReadOnly="True">
+                            <ComboBoxItem Content="Benchmark"/>
+                            <ComboBoxItem Content="Boot"/>
+                            <ComboBoxItem Content="Exec"/>
+                            <ComboBoxItem Content="Hosts"/>
+                            <ComboBoxItem Content="Memlimit"/>
+                            <ComboBoxItem Content="Reboot"/>
+                            <ComboBoxItem Content="Reinstall"/>
+                            <ComboBoxItem Content="Remove"/>
+                            <ComboBoxItem Content="Shutdown"/>
+                            <ComboBoxItem Content="Si-Log-Dir"/>
+                            <ComboBoxItem Content="Uninstall"/>
+                            <ComboBoxItem Content="Update"/>
+                            <ComboBoxItem Content="Watchdog"/>
+                            <ComboBoxItem Content="Winupdate"/>
+                        </ComboBox>
+                        <Button x:Name="computtersButton" Margin="5" Content="Select Computers" Height="20" VerticalAlignment="Top" Click="computtersButton_Click"/>
+                        <ListBox x:Name="OSList" Margin="5" SelectedItem="{Binding SelectedSection}">
+                            <CheckBox Content="Current"/>
+                            <CheckBox Content="Windows 10"/>
+                            <CheckBox Content="Windows 8.1"/>
+                            <CheckBox Content="Windows 8"/>
+                            <CheckBox Content="Windows 7"/>
+                        </ListBox>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox x:Name="taskGroup" Header="Task Settings" Margin="10,10,0,10" Grid.Row="0" Grid.Column="2">
+                    <Grid Margin="0,10,-2,-12">
+                        <Button x:Name="runTaskButton" Content="Run" Margin="0,0,10,10" Click="runTaskButton_Click" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="110"/>
+                        <TextBox x:Name="commandTextBox" Margin="10,0,10,35" TextWrapping="Wrap" Text="Command">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="2">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <ComboBox x:Name="productBox" Margin="10,10,0,0" IsReadOnly="True" SelectedIndex="0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="120">
+                            <ComboBoxItem Content="3dmark06"/>
+                            <ComboBoxItem Content="3dmark11"/>
+                            <ComboBoxItem Content="3dmarkv"/>
+                            <ComboBoxItem Content="3dmarkw8"/>
+                            <ComboBoxItem Content="pcmark7"/>
+                            <ComboBoxItem Content="pcmark8"/>
+                            <ComboBoxItem Content="pcmarkeisa"/>
+                            <ComboBoxItem Content="pcmarkv"/>
+                            <ComboBoxItem Content="vrmark"/>
+                            <ComboBox.Style>
+                                <Style TargetType="ComboBox">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ComboBox.Style>
+                        </ComboBox>
+                        <TextBox x:Name="labelBox" Margin="148,10,10,0" TextWrapping="Wrap" Text="Label" Height="22" VerticalAlignment="Top">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBox x:Name="parametersBox" Margin="10,37,10,35" TextWrapping="Wrap" Text="Parameters">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBox x:Name="loopsBox" Margin="0,0,125,10" TextWrapping="Wrap" Text="1" TextChanged="loopsBox_TextChanged" HorizontalContentAlignment="Right" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="105">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=tasksBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Grid>
+                </GroupBox>
+                <GroupBox x:Name="outputGroup" Header="Output" Margin="10,10,0,10" Grid.Row="2" Grid.ColumnSpan="3">
+                    <TextBox x:Name="outputBox" Grid.ColumnSpan="2" Margin="0,0,-2,-2" TextWrapping="Wrap" Text="OutputBox" Grid.Row="1"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True"/>
+                </GroupBox>
+                <GroupBox x:Name="historyGroup" Header="History" Margin="10,14,0,10" Grid.ColumnSpan="3" Grid.Row="4">
+                    <ListBox x:Name="taskHistoryBox" Margin="0,0,-2,4"/>
+                </GroupBox>
 
-        <GridSplitter x:Name="topRowSplitter" Width="5"
+                <GridSplitter x:Name="topRowSplitter" Width="5"
                       HorizontalAlignment="Center"
                       Grid.Column="1"
                       ResizeDirection="Columns"/>
-        <GridSplitter x:Name="middleColumnSplitter"
+                <GridSplitter x:Name="middleColumnSplitter"
                       Height="5"
                       Grid.ColumnSpan="3"
                       ResizeDirection="Rows"
                       HorizontalAlignment="Stretch" 
                       Grid.Row="1"/>
-        <GridSplitter x:Name="bottomColumnSplitter"
+                <GridSplitter x:Name="bottomColumnSplitter"
                       Height="5"
                       Grid.ColumnSpan="3"
                       ResizeDirection="Rows"
                       HorizontalAlignment="Stretch" 
                       Grid.Row="3"/>
-    </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="QA Scripts">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="200"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="400"/>
+                </Grid.RowDefinitions>
+                <ComboBox x:Name="scriptBox" SelectedIndex="0"
+                          HorizontalAlignment="Left" Margin="10,10,0,0"
+                          VerticalAlignment="Top" Width="120"
+                          Grid.Row="0">
+                    <ComboBoxItem Content="REX"/>
+                </ComboBox>
+                <Button x:Name="runScriptButton" Grid.Row="0" Content="Run Script"
+                        HorizontalAlignment="Right" Margin="0,10,0,0" VerticalAlignment="Top" Width="120" Click="runScriptButton_Click"/>
+                <GroupBox x:Name="groupBox" Header="Settings" Grid.Row="1" Margin="10,10,0,10">
+                    <Grid>
+                        <TextBox x:Name="inputFolderBox" Text="\\tanas\share\jude\results\valeta\forwar_renderer\" TextWrapping="Wrap" HorizontalAlignment="Left" Width="432" Margin="140,10,0,127">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=scriptBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap"
+                                   Text="Input Folder:" VerticalAlignment="Top" Height="22" Width="125"/>
+                        <TextBox x:Name="outputFolderBox" Text="c:\rex_output" TextWrapping="Wrap" HorizontalAlignment="Left" Width="432" Margin="140,37,0,100">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=scriptBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBlock x:Name="textBlock_Copy" HorizontalAlignment="Left" Margin="10,37,0,0" TextWrapping="Wrap"
+                        	VerticalAlignment="Top" Height="22" Width="125"><Run Text="O"/><Run Text="utput"/><Run Text=" Folder:"/></TextBlock>
+                        <TextBox x:Name="tagBox" TextWrapping="Wrap" HorizontalAlignment="Left" Width="432" Margin="140,64,0,73">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=scriptBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBlock x:Name="textBlock_Copy1" HorizontalAlignment="Left" Margin="10,64,0,0" TextWrapping="Wrap"
+                        	VerticalAlignment="Top" Height="22" Width="125"><Run Text="Tag"/><Run Text=":"/></TextBlock>
+                        <TextBox x:Name="versionsPathBox" TextWrapping="Wrap" HorizontalAlignment="Left" Width="432" Margin="140,91,0,46">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=scriptBox}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBlock x:Name="textBlock_Copy2" HorizontalAlignment="Left" Margin="10,91,0,0" TextWrapping="Wrap"
+                        	VerticalAlignment="Top" Height="22" Width="125"><Run Text="Version Files (Optional)"/><Run Text=":"/></TextBlock>
+                    </Grid>
+                </GroupBox>
+                <GridSplitter x:Name="ScriptSplitter"
+                      Height="5"
+                      ResizeDirection="Rows"
+                      HorizontalAlignment="Stretch" 
+                      Grid.Row="2"/>
+                <GroupBox x:Name="groupBox1" Grid.Row="3" Header="Output" Margin="10,10,0,-6">
+                    <TextBox x:Name="scriptOutputBox" TextWrapping="Wrap"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True">
+                    </TextBox>
+                </GroupBox>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackHelper
+namespace JackHelper.Tasks
 {
     public class UpdateTask : Task
     {
@@ -31,7 +31,7 @@ namespace JackHelper
 
         public override string ToString()
         {
-            return string.Format("Jack Update {0}", string.Join(" ", ParseComputers().ToArray());
+            return string.Format("Jack Update {0}", string.Join(" ", ParseComputers().ToArray()));
         }
     }
 }

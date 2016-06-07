@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JackHelper
+namespace JackHelper.Tasks
 {
     class RebootTask : Task
     {
@@ -30,7 +30,7 @@ namespace JackHelper
 
         public override string ToString()
         {
-            return string.Format("Reboot {0}", string.Join(" ", ParseComputers().ToArray());
+            return string.Format("Reboot {0}", string.Join(" ", ParseComputers().ToArray()));
         }
     }
 }

@@ -19,6 +19,9 @@ using System.Threading;
 using System.Management.Automation.Runspaces;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
+using JackHelper.Scripts;
+using JackHelper.Tasks;
+using System.Windows.Interop;
 
 namespace JackHelper
 {
@@ -33,6 +36,8 @@ namespace JackHelper
     {
         string SCRIPT_PATH = @"\\tanas\share\jack\add_task_test.ps1";
         public ComputerSelect ComputerWindow;
+
+        #region initFunctions
         public MainWindow()
         {
             InitializeComponent();
@@ -43,32 +48,20 @@ namespace JackHelper
             System.AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
         }
 
-        private void TaskHistoryBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
         {
-            if (taskHistoryBox.SelectedItem != null)
-            {
-                Task task = (Task)taskHistoryBox.SelectedItem;
-                if (!Dispatcher.CheckAccess())
-                {
-                    Action action = delegate ()
-                    {
-                        task.FillFields(this);
-                    };
-                    Dispatcher.Invoke(DispatcherPriority.Normal, action);
-                }
-                else
-                {
-                    task.FillFields(this);
-                }
-            }
+            MessageBox.Show(e.ExceptionObject.ToString(), "Unhandled exception");
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ComputerWindow = new ComputerSelect { Owner = this };
-            ComputerWindow.Show();
+            WindowInteropHelper helper = new WindowInteropHelper(ComputerWindow);
+            helper.EnsureHandle();
         }
+        #endregion
 
+        #region jackFunctions
         public void AppendOutputText(string text)
         {
             if (!Dispatcher.CheckAccess())
@@ -77,7 +70,7 @@ namespace JackHelper
                 {
                     outputBox.AppendText(text);
                 };
-                Dispatcher.Invoke(DispatcherPriority.Normal,action);
+                Dispatcher.Invoke(DispatcherPriority.Normal, action);
             }
             else
             {
@@ -85,39 +78,40 @@ namespace JackHelper
             }
         }
 
-        void myInformationEventHandler(object sender, DataAddedEventArgs e)
+        void jackInformationEventHandler(object sender, DataAddedEventArgs e)
         {
             VerboseRecord newRecord = ((PSDataCollection<VerboseRecord>)sender)[e.Index];
             AppendOutputText(newRecord.ToString() + "\n");
             Console.WriteLine(newRecord.ToString());
         }
 
-        void myProgressEventHandler(object sender, DataAddedEventArgs e)
+        void jackProgressEventHandler(object sender, DataAddedEventArgs e)
         {
             ProgressRecord newRecord = ((PSDataCollection<ProgressRecord>)sender)[e.Index];
             AppendOutputText(newRecord.Activity.ToString() + "\n");
             Console.WriteLine(newRecord.Activity.ToString());
         }
 
-        void myDebugEventHandler(object sender, DataAddedEventArgs e)
+        void jackDebugEventHandler(object sender, DataAddedEventArgs e)
         {
             DebugRecord newRecord = ((PSDataCollection<DebugRecord>)sender)[e.Index];
             AppendOutputText("Debug: " + newRecord.ToString() + "\n");
             Console.WriteLine(newRecord.ToString());
         }
 
-        void myErrorEventHandler(object sender, DataAddedEventArgs e)
+        void jackErrorEventHandler(object sender, DataAddedEventArgs e)
         {
             ErrorRecord newRecord = ((PSDataCollection<ErrorRecord>)sender)[e.Index];
             AppendOutputText("ERROR: " + newRecord.ToString() + "\n");
  
             Console.WriteLine(newRecord.ToString());
         }
+        #endregion
 
-
+        #region tasks
         private void runTaskButton_Click(object sender, RoutedEventArgs e)
         {
-            Task task;
+            Tasks.Task task;
             string taskName = tasksBox.Text;
             switch (taskName)
             {
@@ -159,10 +153,10 @@ namespace JackHelper
 
 
             PowerShell psinstance = PowerShell.Create();
-            psinstance.Streams.Verbose.DataAdded += myInformationEventHandler;
-            psinstance.Streams.Progress.DataAdded += myProgressEventHandler;
-            psinstance.Streams.Debug.DataAdded += myDebugEventHandler;
-            psinstance.Streams.Error.DataAdded += myErrorEventHandler;
+            psinstance.Streams.Verbose.DataAdded += jackInformationEventHandler;
+            psinstance.Streams.Progress.DataAdded += jackProgressEventHandler;
+            psinstance.Streams.Debug.DataAdded += jackDebugEventHandler;
+            psinstance.Streams.Error.DataAdded += jackErrorEventHandler;
 
             //scriptInvoker.Invoke("Set-ExecutionPolicy Unrestricted Process");
             psinstance.AddCommand("Set-ExecutionPolicy");
@@ -219,28 +213,24 @@ namespace JackHelper
             }
         }
 
-        /// <summary>
-        /// Event handler for when data is added to the output stream.
-        /// </summary>
-        /// <param name="sender">Contains the complete PSDataCollection of all output items.</param>
-        /// <param name="e">Contains the index ID of the added collection item and the ID of the PowerShell instance this event belongs to.</param>
-        void outputCollection_DataAdded(object sender, DataAddedEventArgs e)
+        private void TaskHistoryBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // do something when an object is written to the output stream
-            Console.WriteLine("Object added to output.");
-
-
-        }
-
-        /// <summary>
-        /// Event handler for when Data is added to the Error stream.
-        /// </summary>
-        /// <param name="sender">Contains the complete PSDataCollection of all error output items.</param>
-        /// <param name="e">Contains the index ID of the added collection item and the ID of the PowerShell instance this event belongs to.</param>
-        void Error_DataAdded(object sender, DataAddedEventArgs e)
-        {
-            // do something when an error is written to the error stream
-            Console.WriteLine("An error was written to the Error stream!");
+            if (taskHistoryBox.SelectedItem != null)
+            {
+                Tasks.Task task = (Tasks.Task)taskHistoryBox.SelectedItem;
+                if (!Dispatcher.CheckAccess())
+                {
+                    Action action = delegate ()
+                    {
+                        task.FillFields(this);
+                    };
+                    Dispatcher.Invoke(DispatcherPriority.Normal, action);
+                }
+                else
+                {
+                    task.FillFields(this);
+                }
+            }
         }
 
         private void computtersButton_Click(object sender, RoutedEventArgs e)
@@ -258,9 +248,99 @@ namespace JackHelper
 
         }
 
-        static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
+        #endregion
+
+
+
+
+        #region scriptFunctions
+        public void ScriptsAppendOutputText(string text)
         {
-            MessageBox.Show(e.ExceptionObject.ToString(), "Unhandled exception");
+            if (!Dispatcher.CheckAccess())
+            {
+                Action action = delegate ()
+                {
+                    scriptOutputBox.AppendText(text);
+                };
+                Dispatcher.Invoke(DispatcherPriority.Normal, action);
+            }
+            else
+            {
+                scriptOutputBox.AppendText(text);
+            }
         }
+
+        void scriptInformationEventHandler(object sender, DataAddedEventArgs e)
+        {
+            VerboseRecord newRecord = ((PSDataCollection<VerboseRecord>)sender)[e.Index];
+            ScriptsAppendOutputText(newRecord.ToString() + "\n");
+            Console.WriteLine(newRecord.ToString());
+        }
+
+        void scriptProgressEventHandler(object sender, DataAddedEventArgs e)
+        {
+            ProgressRecord newRecord = ((PSDataCollection<ProgressRecord>)sender)[e.Index];
+            AppendOutputText(newRecord.Activity.ToString() + "\n");
+            Console.WriteLine(newRecord.Activity.ToString());
+        }
+
+        void scriptDebugEventHandler(object sender, DataAddedEventArgs e)
+        {
+            DebugRecord newRecord = ((PSDataCollection<DebugRecord>)sender)[e.Index];
+            ScriptsAppendOutputText("Debug: " + newRecord.ToString() + "\n");
+            Console.WriteLine(newRecord.ToString());
+        }
+
+        void scriptErrorEventHandler(object sender, DataAddedEventArgs e)
+        {
+            ErrorRecord newRecord = ((PSDataCollection<ErrorRecord>)sender)[e.Index];
+            ScriptsAppendOutputText("ERROR: " + newRecord.ToString() + "\n");
+
+            Console.WriteLine(newRecord.ToString());
+        }
+
+        private void Output_DataAdded(object sender, DataAddedEventArgs e)
+        {
+            PSDataCollection<PSObject> data = (PSDataCollection<PSObject>)sender;
+            
+            string entry = data[e.Index].ToString();
+
+            ScriptsAppendOutputText(entry + "\n");
+
+            Console.WriteLine(entry.ToString());
+        }
+        #endregion
+
+        #region scripts
+        private void runScriptButton_Click(object sender, RoutedEventArgs e)
+        {
+            Script script;
+            string scriptName = scriptBox.Text;
+            switch (scriptName)
+            {
+                case "REX":
+                    script = new REXScript(inputFolderBox.Text, outputFolderBox.Text, tagBox.Text, versionsPathBox.Text);
+                    break;
+                default:
+                    return;
+            }
+
+            PowerShell psinstance = script.GetPSScript();
+            
+            psinstance.Streams.Verbose.DataAdded += scriptInformationEventHandler;
+            psinstance.Streams.Progress.DataAdded += scriptProgressEventHandler;
+            psinstance.Streams.Debug.DataAdded += scriptDebugEventHandler;
+            psinstance.Streams.Error.DataAdded += scriptErrorEventHandler;
+            PSDataCollection<PSObject> output = new PSDataCollection<PSObject>();
+            output.DataAdded += Output_DataAdded;
+            var results = psinstance.BeginInvoke<PSObject, PSObject>(null, output);
+            /*foreach (PSObject result in results)
+            {
+                ScriptsAppendOutputText(result.ToString());
+                Console.WriteLine(result.ToString());
+            }*/
+        }
+
+        #endregion
     }
 }
