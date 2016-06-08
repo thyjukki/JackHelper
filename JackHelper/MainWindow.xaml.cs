@@ -145,6 +145,17 @@ namespace JackHelper
                 case "Update":
                     task = new UpdateTask(ComputerWindow.SelectedComputers(), parseOSList);
                     break;
+                case "Valeta/Dandia":
+                    try
+                    {
+                        task = new BatTask(zipBox.Text, outputPathcBox.Text, int.Parse(countBox.Text), modeBox.Text, (BatTask.BatType) batTypeBox.SelectedIndex, nocopyBox.IsChecked.Value, ComputerWindow.SelectedComputers(), parseOSList);
+                    }
+                    catch (FormatException)
+                    {
+                        MessageBox.Show("ERROR", "Test count is not a number!");
+                        return;
+                    }
+                    break;
                 default:
                     return;
             }
@@ -208,7 +219,7 @@ namespace JackHelper
                         }
                     }
                 }
-
+                Console.WriteLine(String.Join(" ", collector));
                 return collector;
             }
         }
